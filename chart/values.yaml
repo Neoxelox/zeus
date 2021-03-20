@@ -1,4 +1,4 @@
-namespace: applications
+namespace: olympus
 nameOverride: "zeus"
 fullnameOverride: "zeus"
 
