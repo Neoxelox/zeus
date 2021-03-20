@@ -1,0 +1,147 @@
+namespace: applications
+nameOverride: "zeus"
+fullnameOverride: "zeus"
+
+image:
+  repository: registry.digitalocean.com/unire/zeus
+  tag: "latest"
+  pullPolicy: IfNotPresent
+  pullSecrets:
+    - name: do-registry-unire
+
+scaling:
+  replicas: 2 # Number of Nodes
+
+resources:
+  # limits: # Enable this if autoscaling on
+  #   cpu: 200m
+  #   memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+environment:
+  - name: "ZEUS_HOST"
+    value: "unire.one,www.unire.one"
+  - name: "ZEUS_PORT"
+    value: "1111"
+  - name: "ZEUS_SCHEME"
+    value: "http"
+  - name: "ZEUS_ENVIRONMENT"
+    value: "production"
+  - name: "ZEUS_NAME"
+    value: "zeus"
+  - name: "ZEUS_VERSION"
+    value: "1"
+  - name: "ZEUS_RELEASE"
+    value: "1"
+  - name: "DATABASE_HOST"
+    valueFrom:
+      secretKeyRef:
+        name: database
+        key: host
+  - name: "DATABASE_PORT"
+    valueFrom:
+      secretKeyRef:
+        name: database
+        key: port
+  - name: "DATABASE_USER"
+    valueFrom:
+      secretKeyRef:
+        name: database
+        key: zeus_user
+  - name: "DATABASE_PASSWORD"
+    valueFrom:
+      secretKeyRef:
+        name: database
+        key: zeus_password
+  - name: "DATABASE_NAME"
+    valueFrom:
+      secretKeyRef:
+        name: database
+        key: zeus_name
+  - name: "DATABASE_SSLMODE"
+    valueFrom:
+      secretKeyRef:
+        name: database
+        key: sslmode
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2 # Number of Nodes
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+ports:
+  - name: http
+    containerPort: 1111
+    protocol: TCP
+
+service:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 1111
+      targetPort: 1111 # containerPort
+      # nodePort: 30010
+      protocol: TCP
+
+probes:
+  readiness:
+    initialDelaySeconds: 15
+    periodSeconds: 1
+    failureThreshold: 5
+    httpGet:
+      path: /health
+      port: http
+  liveness:
+    initialDelaySeconds: 15
+    periodSeconds: 1
+    failureThreshold: 5
+    httpGet:
+      path: /health
+      port: http
+
+ingress:
+  enabled: false
+  # servicePort: 1111
+  # annotations:
+  #   kubernetes.io/ingress.class: nginx
+  #   # cert-manager.io/cluster-issuer: "letsencrypt-staging"
+  # hosts:
+  #   - host: zeus.neoxelox.com
+  #     paths:
+  #       - path: /
+  #   - host: www.zeus.neoxelox.com
+  #     paths:
+  #       - path: /
+  tls:
+    []
+    # - secretName: tls-zeus-neoxelox-com
+    #   hosts:
+    #     - zeus.neoxelox.com
+    # - secretName: tls-www-zeus-neoxelox-com
+    #   hosts:
+    #     - www.zeus.neoxelox.com
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: "app.kubernetes.io/name"
+              operator: In
+              values:
+                - zeus
+        topologyKey: "kubernetes.io/hostname"
+
+nodeSelector: {}
+
+tolerations: []
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}

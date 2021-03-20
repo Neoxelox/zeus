@@ -1,0 +1,76 @@
+version: '3'
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /data/postgres
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - database:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  locust-master:
+    container_name: locust-master
+    image: locustio/locust
+    volumes:
+      - ./locustfile.py:/mnt/locust/locustfile.py
+    command: -f /mnt/locust/locustfile.py --master --host "http://zeus:1111" --users 2500 --spawn-rate 25
+    depends_on:
+      - zeus
+    links:
+      - zeus:zeus
+    ports:
+      - "8089:8089"
+    restart: unless-stopped
+
+  locust-worker:
+    # container_name: locust-worker # Scalable containers cannot have custom names
+    image: locustio/locust
+    volumes:
+    - ./locustfile.py:/mnt/locust/locustfile.py
+    command: -f /mnt/locust/locustfile.py --worker --master-host locust-master
+    depends_on:
+      - locust-master
+      - zeus
+    links:
+      - locust-master:locust-master
+      - zeus:zeus
+    deploy:
+      replicas: 4
+    restart: unless-stopped
+
+  zeus:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    container_name: zeus
+    image: zeus
+    environment:
+      ZEUS_HOST: localhost
+      ZEUS_PORT: 1111
+      ZEUS_SCHEME: http
+      ZEUS_ENVIRONMENT: development
+      ZEUS_NAME: zeus
+      ZEUS_VERSION: fakeVersion
+      ZEUS_RELEASE: fakeRelease
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: zeus
+      DATABASE_PASSWORD: zeus
+      DATABASE_NAME: zeus
+      DATABASE_SSLMODE: disable
+    depends_on:
+      - postgres
+    links:
+      - postgres:postgres
+    ports:
+      - "1111:1111"
+    restart: unless-stopped
+
+volumes:
+  database:

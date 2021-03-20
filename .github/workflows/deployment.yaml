@@ -1,0 +1,74 @@
+name: Deployment
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+
+      - name: Setup Go 🐻
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+
+      - name: Setup Python 🐍
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.6'
+
+      - name: Get CI Cache 📦
+        id: cache-ci
+        uses: actions/cache@v2
+        with:
+          path: .cache/pip
+          key: ${{ runner.os }}-ci
+
+      - name: Setup CI 🧩
+        if: steps.cache-ci.outputs.cache-hit != 'true'
+        run: pip install invoke
+
+      - name: Lint 🪶
+        run: invoke lint -y
+
+      - name: Test 🧪
+        run: invoke test -y
+
+      - name: Setup Doctl 💧
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Get Image Cache 📦
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
+      - name: Build 🏗️
+        run: docker build -f ./Dockerfile . -t registry.digitalocean.com/unire/zeus:$(echo $GITHUB_SHA | head -c7)
+
+      # - name: Build 🏗️
+      #   run: docker build -f ./Dockerfile . -t ghcr.io/neoxelox/zeus:$(echo $GITHUB_SHA | head -c7)
+
+      - name: Push 📤
+        run: |
+          doctl registry login --expiry-seconds 180
+          docker push registry.digitalocean.com/unire/zeus:$(echo $GITHUB_SHA | head -c7)
+
+      # - name: Push 📤
+      #   run: |
+      #     echo ${{ secrets.GITHUB_REGISTRY_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+      #     docker push ghcr.io/neoxelox/zeus:$(echo $GITHUB_SHA | head -c7)
+
+      - name: Setup Helm 🪖
+        uses: azure/setup-helm@v1
+        with:
+          version: 'v3.5.1'
+
+      - name: Deploy 🚀
+        run: |
+          doctl kubernetes cluster kubeconfig save --expiry-seconds 180 unire
+          helm upgrade --install --atomic --wait --timeout 60s zeus ./chart/ -f ./chart/values.yaml --namespace olympus --set=image.tag=$(echo $GITHUB_SHA | head -c7)

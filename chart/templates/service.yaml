@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: { { include "zeus.fullname" . } }
+  namespace: { { .Values.namespace } }
+  labels: { { - include "zeus.labels" . | nindent 4 } }
+spec:
+  type: { { .Values.service.type } }
+  ports: { { - toYaml .Values.service.ports | nindent 4 } }
+  selector: { { - include "zeus.selectorLabels" . | nindent 4 } }

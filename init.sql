@@ -1,0 +1,9 @@
+CREATE USER zeus WITH
+    CREATEROLE
+    PASSWORD 'zeus';
+
+CREATE DATABASE zeus WITH
+    OWNER = zeus;
+
+CREATE DATABASE zeus_test WITH
+    OWNER = zeus;
