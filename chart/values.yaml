@@ -10,7 +10,7 @@ image:
     - name: do-registry-unire
 
 scaling:
-  replicas: 2 # Number of Nodes
+  replicas: 1 # Number of Nodes
 
 resources:
   # limits: # Enable this if autoscaling on

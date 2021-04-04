@@ -49,4 +49,4 @@ jobs:
       - name: Deploy 🚀
         run: |
           doctl kubernetes cluster kubeconfig save --expiry-seconds 180 unire
-          helm upgrade --install --atomic --wait --timeout 180s zeus ./chart/ -f ./chart/values.yaml --namespace olympus --set=image.tag=$(echo $GITHUB_SHA | head -c7)
+          helm upgrade --install --atomic --wait --timeout 160s zeus ./chart/ -f ./chart/values.yaml --namespace olympus --set=image.tag=$(echo $GITHUB_SHA | head -c7)
