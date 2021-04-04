@@ -21,16 +21,8 @@ jobs:
         with:
           python-version: '3.8.6'
 
-      - name: Get CI Cache 📦
-        id: cache-ci
-        uses: actions/cache@v2
-        with:
-          path: .cache/pip
-          key: ${{ runner.os }}-ci
-
       - name: Setup CI 🧩
-        if: steps.cache-ci.outputs.cache-hit != 'true'
-        run: pip install invoke
+        run: pip install invoke python-dotenv
 
       - name: Lint 🪶
         run: invoke lint -y

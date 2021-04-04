@@ -1,0 +1,3 @@
+DROP INDEX IF EXISTS "users_name_idx"; -- CONCURRENTLY
+DROP INDEX IF EXISTS "users_username_idx"; -- CONCURRENTLY
+DROP TABLE IF EXISTS "users";

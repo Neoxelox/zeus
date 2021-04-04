@@ -8,11 +8,11 @@ ENV CGO_ENABLED=0 \
 WORKDIR /app
 
 # Download dependencies before build in order to cache them
-COPY go.mod go.sum /app/
+COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY . /app
+COPY . ./
 
 RUN go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o zeus ./cmd/zeus/main.go
 
@@ -25,12 +25,13 @@ RUN apk update && \
 WORKDIR /app
 
 # Copy source files for stacktrace mapping
-COPY cmd /app/cmd
-COPY internal /app/internal
-COPY pkg /app/pkg
+COPY cmd ./cmd
+COPY internal ./internal
+COPY pkg ./pkg
 
-COPY assets /assets
-COPY --from=builder /app/zeus /app
+COPY assets ./assets
+COPY migrations ./migrations
+COPY --from=builder /app/zeus ./
 
 # App
 EXPOSE 1111

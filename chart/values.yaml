@@ -22,11 +22,11 @@ resources:
 
 environment:
   - name: "ZEUS_HOST"
-    value: "unire.one,www.unire.one"
+    value: "unire.one,www.unire.one,api.unire.one"
   - name: "ZEUS_PORT"
     value: "1111"
   - name: "ZEUS_SCHEME"
-    value: "http"
+    value: "https"
   - name: "ZEUS_ENVIRONMENT"
     value: "production"
   - name: "ZEUS_NAME"
@@ -104,26 +104,19 @@ probes:
       port: http
 
 ingress:
-  enabled: false
-  # servicePort: 1111
-  # annotations:
-  #   kubernetes.io/ingress.class: nginx
-  #   # cert-manager.io/cluster-issuer: "letsencrypt-staging"
-  # hosts:
-  #   - host: zeus.neoxelox.com
-  #     paths:
-  #       - path: /
-  #   - host: www.zeus.neoxelox.com
-  #     paths:
-  #       - path: /
+  enabled: true
+  servicePort: 1111
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+  hosts:
+    - host: api.unire.one
+      paths:
+        - path: /
   tls:
-    []
-    # - secretName: tls-zeus-neoxelox-com
-    #   hosts:
-    #     - zeus.neoxelox.com
-    # - secretName: tls-www-zeus-neoxelox-com
-    #   hosts:
-    #     - www.zeus.neoxelox.com
+    - secretName: tls-api-unire-one
+      hosts:
+        - api.unire.one
 
 affinity:
   podAntiAffinity:

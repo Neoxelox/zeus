@@ -24,8 +24,14 @@ func (s *Server) addDependencies(logger *logger.Logger) error {
 		plogLevel = pgx.LogLevelDebug
 	}
 
-	database, err := database.New(context.Background(), s.Configuration.Database.Dsn, 15, database.Configuration{
-		MinConns: 0,
+	database, err := database.New(context.Background(), 15, database.Configuration{
+		Host:     s.Configuration.Database.Host,
+		Port:     s.Configuration.Database.Port,
+		User:     s.Configuration.Database.User,
+		Password: s.Configuration.Database.Password,
+		Name:     s.Configuration.Database.Name,
+		SSLMode:  s.Configuration.Database.SSLMode,
+		MinConns: 0,  // nolint
 		MaxConns: 22, // nolint
 		AppName:  s.Configuration.App.Name,
 		Logger:   logger.Database(zlogLevel),
@@ -33,6 +39,11 @@ func (s *Server) addDependencies(logger *logger.Logger) error {
 	})
 	if err != nil {
 		return errors.Wrap(err, "Cannot add database dependency")
+	}
+
+	err = database.Migrate(context.Background())
+	if err != nil {
+		return errors.Wrap(err, "Cannot migrate database")
 	}
 
 	s.Dependencies = Dependencies{

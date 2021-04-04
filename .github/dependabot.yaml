@@ -1,0 +1,17 @@
+version: 2
+updates:
+# Fetch and update latest `gomod` packages
+- package-ecosystem: gomod
+  directory: '/'
+  schedule:
+    interval: daily
+    time: '12:00'
+  open-pull-requests-limit: 5
+  reviewers:
+    - neoxelox
+  assignees:
+    - neoxelox
+  commit-message:
+    prefix: fix
+    prefix-development: chore
+    include: scope

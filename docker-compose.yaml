@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: postgres
       PGDATA: /data/postgres
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
       - database:/data/postgres
     ports:
       - "5432:5432"
@@ -50,20 +50,9 @@ services:
       dockerfile: ./Dockerfile
     container_name: zeus
     image: zeus
+    env_file: ./development.env
     environment:
-      ZEUS_HOST: localhost
-      ZEUS_PORT: 1111
-      ZEUS_SCHEME: http
-      ZEUS_ENVIRONMENT: development
-      ZEUS_NAME: zeus
-      ZEUS_VERSION: fakeVersion
-      ZEUS_RELEASE: fakeRelease
       DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
-      DATABASE_USER: zeus
-      DATABASE_PASSWORD: zeus
-      DATABASE_NAME: zeus
-      DATABASE_SSLMODE: disable
     depends_on:
       - postgres
     links:

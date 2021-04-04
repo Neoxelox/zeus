@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -40,7 +39,6 @@ type (
 		Password string
 		Name     string
 		SSLMode  string
-		Dsn      string
 	}
 
 	// Configuration describes the application configuration.
@@ -70,14 +68,6 @@ func (s *Server) addConfiguration() error { // nolint
 			Password: getEnvAsString("DATABASE_PASSWORD", "zeus"),
 			Name:     getEnvAsString("DATABASE_NAME", "zeus"),
 			SSLMode:  getEnvAsString("DATABASE_SSLMODE", "disable"),
-			Dsn: fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=%s",
-				getEnvAsString("DATABASE_USER", "zeus"),
-				getEnvAsString("DATABASE_PASSWORD", "zeus"),
-				getEnvAsString("DATABASE_HOST", "postgres"),
-				getEnvAsInt("DATABASE_PORT", 5432),
-				getEnvAsString("DATABASE_NAME", "zeus"),
-				getEnvAsString("DATABASE_SSLMODE", "disable"),
-			),
 		},
 	}
 

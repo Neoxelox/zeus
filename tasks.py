@@ -2,6 +2,7 @@ import os
 import re
 import sys
 
+from dotenv import load_dotenv
 from invoke import task
 
 GOPATH = os.environ.get("GOPATH", os.environ.get("HOME") + "/go")
@@ -9,10 +10,14 @@ GOPATH = os.environ.get("GOPATH", os.environ.get("HOME") + "/go")
 LINTER_VERSION = "1.38.0"
 LINTER = f"{GOPATH}/bin/golangci-lint"
 
-TESTER_VERSION = "version"
+TESTER_VERSION = "1.6.2"
 TESTER = f"{GOPATH}/bin/gotestsum"
 
-SERVICES = ["zeus"]
+MIGRATOR_VERSION = "4.14.1"
+MIGRATOR = f"{GOPATH}/bin/migrate"
+
+CURRENT = "zeus"
+SERVICES = ["postgres"]
 
 
 def fail(message):
@@ -20,21 +25,30 @@ def fail(message):
     sys.exit(1)
 
 
+@task()
+def dev(c):
+    """Start current service development mode."""
+    load_dotenv(dotenv_path="./development.env")
+    start(c, background=True)
+    c.run(f"go run ./cmd/zeus/main.go")
+
+
 @task(
     help={
-        "current": "Only see stdout of the current service.",
+        "background": "Execute in background.",
+        "current": "Start current service container alongside.",
         "loadtest": "Start loadtesting containers alongside.",
     }
 )
-def start(c, current=False, loadtest=False):
+def start(c, background=False, current=False, loadtest=False):
     """Start infrastructure locally."""
-    containers = ["postgres"] + SERVICES
-    if loadtest:
-        containers = containers + ["locust-master", "locust-worker"]
-
-    c.run(f"docker-compose up --build {'-d' if current else ''} {' '.join(containers)}")
+    containers = SERVICES
     if current:
-        c.run(f"docker-compose logs -f --tail='all' zeus")
+        containers.append(CURRENT)
+    if loadtest:
+        containers.extend(["locust-master", "locust-worker"])
+
+    c.run(f"docker-compose up --build {'-d' if background else ''} {' '.join(containers)}")
 
 
 @task()
@@ -76,6 +90,8 @@ def prune(c):
 def test(c, test="", verbose=False, show=False, yes=False):
     """Run tests."""
     devtools(c, yes=yes)
+    load_dotenv(dotenv_path="./testing.env")
+    start(c, background=True)
 
     test_regex = "./..."
 
@@ -114,15 +130,17 @@ def devtools(c, yes=False):
     """Check and install devtools."""
 
     def installed():
-        tester = TESTER_VERSION in c.run(f"{TESTER} --version", warn=True, hide="both").stdout
+        tester = "dev" in c.run(f"{TESTER} --version", warn=True, hide="both").stdout
         linter = LINTER_VERSION in c.run(f"{LINTER} --version", warn=True, hide="both").stdout
-        return tester and linter
+        migrator = "dev" in c.run(f"{MIGRATOR} --version", warn=True, hide="both").stderr
+        return tester and linter and migrator
 
     if not installed():
         if not yes and input("Devtools not installed, install? y/n: ").lower() != "y":
             fail("Aborting as devtools not installed!")
 
-        c.run(f"go install gotest.tools/gotestsum@latest")
+        c.run(f"go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v{MIGRATOR_VERSION}")
+        c.run(f"go install gotest.tools/gotestsum@v{TESTER_VERSION}")
         c.run(
             f"curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b {GOPATH}/bin v{LINTER_VERSION}"
         )
@@ -133,7 +151,7 @@ def devtools(c, yes=False):
 
 @task(
     help={
-        "fix": "Automatically set fixable errors.",
+        "fix": "Automatically correct fixable errors.",
         "yes": "Automatically say yes to the following questions.",
     }
 )
@@ -142,3 +160,16 @@ def lint(c, fix=False, yes=False):
     devtools(c, yes=yes)
 
     c.run(f"{LINTER} run ./... -c .golangci.yaml {'--fix' if fix else ''}")
+
+
+@task(
+    help={
+        "name": "Migration name.",
+        "yes": "Automatically say yes to the following questions.",
+    }
+)
+def migrate(c, name, yes=False):
+    """Create a migration."""
+    devtools(c, yes=yes)
+
+    c.run(f"{MIGRATOR} create -ext sql -dir migrations -seq -digits 4 {name}")

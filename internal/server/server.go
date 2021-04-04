@@ -10,6 +10,7 @@ import (
 
 	"github.com/neoxelox/zeus/internal/exception"
 	"github.com/neoxelox/zeus/internal/logger"
+	"github.com/neoxelox/zeus/internal/validator"
 )
 
 // Server describes the main application instance.
@@ -25,7 +26,7 @@ func New(e *echo.Echo) *Server {
 	server := &Server{Instance: e}
 
 	if err := server.addConfiguration(); err != nil {
-		panic("Cannot add server configuration")
+		panic(fmt.Sprintf("Cannot add server configuration\n %+v", err))
 	}
 
 	debug := false
@@ -41,20 +42,20 @@ func New(e *echo.Echo) *Server {
 	server.Instance.HidePort = true
 	server.Instance.Debug = debug
 	server.Instance.HTTPErrorHandler = exception.Handler
-	// Server.Instance.Renderer
-	// TODO(alex): add custom server.Instance.Validator.
+	// TODO(alex): add custom server.Instance.Renderer.
+	server.Instance.Validator = validator.New()
 	server.Instance.IPExtractor = echo.ExtractIPFromRealIPHeader()
 
 	if err := server.addDependencies(appLogger); err != nil {
-		panic("Cannot add server dependencies")
+		server.Instance.Logger.Panicf("Cannot add server dependencies\n %+v", err)
 	}
 
 	if err := server.addHandlers(); err != nil {
-		panic("Cannot add server handlers")
+		server.Instance.Logger.Panicf("Cannot add server handlers\n %+v", err)
 	}
 
 	if err := server.addRoutes(appLogger); err != nil {
-		panic("Cannot add server routes")
+		server.Instance.Logger.Panicf("Cannot add server routes\n %+v", err)
 	}
 
 	return server
