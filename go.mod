@@ -13,6 +13,6 @@ require (
 	github.com/labstack/echo/v4 v4.2.1
 	github.com/labstack/gommon v0.3.0
 	github.com/rs/xid v1.2.1
-	github.com/rs/zerolog v1.20.0
+	github.com/rs/zerolog v1.21.0
 	github.com/stretchr/testify v1.7.0 // indirect
 )
