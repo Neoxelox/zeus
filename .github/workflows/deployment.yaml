@@ -16,20 +16,6 @@ jobs:
         with:
           go-version: '1.16'
 
-      - name: Setup Python 🐍
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8.6'
-
-      - name: Setup CI 🧩
-        run: pip install invoke python-dotenv
-
-      - name: Lint 🪶
-        run: invoke lint -y
-
-      - name: Test 🧪
-        run: invoke test -y
-
       - name: Setup Doctl 💧
         uses: digitalocean/action-doctl@v2
         with:
@@ -63,4 +49,4 @@ jobs:
       - name: Deploy 🚀
         run: |
           doctl kubernetes cluster kubeconfig save --expiry-seconds 180 unire
-          helm upgrade --install --atomic --wait --timeout 60s zeus ./chart/ -f ./chart/values.yaml --namespace olympus --set=image.tag=$(echo $GITHUB_SHA | head -c7)
+          helm upgrade --install --atomic --wait --timeout 180s zeus ./chart/ -f ./chart/values.yaml --namespace olympus --set=image.tag=$(echo $GITHUB_SHA | head -c7)
