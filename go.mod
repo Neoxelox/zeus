@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgxutil v0.0.0-20200703204206-37866e09a15b
 	github.com/labstack/echo/v4 v4.2.1
 	github.com/labstack/gommon v0.3.0
-	github.com/rs/xid v1.2.1
+	github.com/rs/xid v1.3.0
 	github.com/rs/zerolog v1.20.0
 	github.com/stretchr/testify v1.7.0 // indirect
 )
