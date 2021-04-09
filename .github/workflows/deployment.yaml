@@ -16,20 +16,6 @@ jobs:
         with:
           go-version: '1.16'
 
-      - name: Setup Python 🐍
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8.6'
-
-      - name: Setup CI 🧩
-        run: pip install invoke python-dotenv
-
-      - name: Lint 🪶
-        run: invoke lint -y
-
-      - name: Test 🧪
-        run: invoke test -y
-
       - name: Setup Doctl 💧
         uses: digitalocean/action-doctl@v2
         with:
