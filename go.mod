@@ -3,7 +3,7 @@ module github.com/neoxelox/zeus
 go 1.16
 
 require (
-	github.com/cockroachdb/errors v1.8.3
+	github.com/cockroachdb/errors v1.8.4
 	github.com/go-playground/validator/v10 v10.5.0
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jackc/pgconn v1.8.1
