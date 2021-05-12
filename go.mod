@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/cockroachdb/errors v1.8.3
-	github.com/go-playground/validator/v10 v10.5.0
+	github.com/go-playground/validator/v10 v10.6.1
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jackc/pgconn v1.8.1
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
