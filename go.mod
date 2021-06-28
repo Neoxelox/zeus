@@ -3,7 +3,7 @@ module github.com/neoxelox/zeus
 go 1.16
 
 require (
-	github.com/cockroachdb/errors v1.8.3
+	github.com/cockroachdb/errors v1.8.5
 	github.com/go-playground/validator/v10 v10.5.0
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jackc/pgconn v1.8.1
@@ -16,8 +16,4 @@ require (
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/rs/xid v1.3.0
 	github.com/rs/zerolog v1.21.0
-	github.com/stretchr/testify v1.7.0 // indirect
-	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
-	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
-	golang.org/x/text v0.3.6 // indirect
 )
